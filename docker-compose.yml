@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+
+  postgres:
+    container_name: ml-postgres
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    networks:
+      - laravel_network
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  app:
+    container_name: ml-laravel
+    build:
+      context: .
+      dockerfile: ./.docker/php/Dockerfile
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8000"
+    networks:
+      - laravel_network
+
+networks:
+  laravel_network:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local
