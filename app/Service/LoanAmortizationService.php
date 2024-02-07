@@ -24,6 +24,10 @@ class LoanAmortizationService
             throw new LoanProcessException("You have unpaid loans, please pay it");
         }
 
+        if($mortgageLoan->ending_balance <= 0){
+            throw new LoanProcessException("your loans are already paid");
+        }
+
         $monthly_payment = $mortgageLoan->monthly_payment;
 
         $loanCalc = $this->newLoanCalculator(
@@ -38,11 +42,14 @@ class LoanAmortizationService
 
         $month_number = $mortgageLoan->loanAmortizations()->count() + 1;
 
+        $new_ending_balance = $mortgageLoan->ending_balance - $principal;
+
+
         return $mortgageLoan->loanAmortizations()->create([
             'starting_balance'=>$mortgageLoan->ending_balance,
             'monthly_payment'=> $monthly_payment,
             'principal'=>$principal,
-            'ending_balance'=>$mortgageLoan->ending_balance - $principal,
+            'ending_balance'=>$new_ending_balance,
             'interest'=>$interest,
             'month_number'=>$month_number,
         ]);

@@ -17,21 +17,31 @@ class ExtraRepaymentService
 
     function create(MortgageLoan $mortgageLoan, float $extra_amount){
         $extra_amount = Helper::validateDecimal($extra_amount,"extra_amount");
-
+        if($mortgageLoan->ending_balance <= 0){
+            throw new LoanProcessException("your loans are already paid");
+        }
         $monthly_payment = $mortgageLoan->monthly_payment;
 
-        $ending_balance = $mortgageLoan->ending_balance - ($monthly_payment + $extra_amount );
+        $interest = $this->newLoanCalculator(
+            $mortgageLoan->ending_balance,
+            $mortgageLoan->annual_loan_term,
+            $mortgageLoan->annual_interest_rate
+        )->monthlyInterest();
+        $principal = $monthly_payment - $interest;
+
+
+        $new_ending_balance = $mortgageLoan->ending_balance - ($monthly_payment + $extra_amount );
+
+        if($new_ending_balance < 0){
+            $extra_amount = $mortgageLoan->ending_balance - $monthly_payment;
+            $new_ending_balance=0;
+        }
 
         $loanCalculator = $this->newLoanCalculator(
-            $ending_balance,
+            $new_ending_balance,
             $mortgageLoan->annual_loan_term,
             $mortgageLoan->annual_interest_rate
         );
-
-        $interest = $loanCalculator->monthlyInterest();
-
-        $principal = $monthly_payment - $interest;
-
 
         DB::beginTransaction();
 
@@ -44,7 +54,7 @@ class ExtraRepaymentService
                 'starting_balance'=>$mortgageLoan->ending_balance,
                 'monthly_payment'=> $monthly_payment,
                 'principal'=>$principal,
-                'ending_balance'=>$ending_balance,
+                'ending_balance'=>$new_ending_balance,
                 'interest'=>$interest,
                 'month_number'=>$month_number,
                 'extra_repayment'=> $extra_amount,
@@ -63,7 +73,6 @@ class ExtraRepaymentService
         }
 
         DB::commit();
-
     }
 
 

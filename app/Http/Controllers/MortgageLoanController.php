@@ -20,6 +20,12 @@ class MortgageLoanController extends Controller
     )
     {}
 
+    function view(){
+        $users = User::with('mortgageLoans')->limit(10)->get();
+
+        return view('welcome')->with(["users"=>$users]);
+    }
+
     function get(GetUserMortgageLoanRequest $request){
         $user = User::findOrFail($request->user_id);
 

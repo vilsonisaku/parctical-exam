@@ -22,9 +22,7 @@ class DatabaseSeeder extends Seeder
     function __construct(
         private MortgageLoanService $mortgageLoanService
     )
-    {
-        
-    }
+    {}
 
     /**
      * Seed the application's database.
@@ -41,10 +39,6 @@ class DatabaseSeeder extends Seeder
 
         $this->mortgageLoanService->create($user,$currency,$mortgage,25000,8.5,2);
 
-        $mortgageLoan = MortgageLoan::first();
-
-        $this->mortgageLoanService
-        ->createAmortizationLoan($mortgageLoan)
-        ->createExtraRepayment($mortgageLoan, 1000);
+        $this->call(MortgageLoanSeeder::class);
     }
 }
