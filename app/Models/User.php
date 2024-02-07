@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Trait\UserTrait;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, UserTrait;
 
     /**
      * The attributes that are mass assignable.
@@ -42,4 +43,16 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function mortgageLoans(){
+        return $this->hasMany(MortgageLoan::class);
+    }
+
+    public function loanAmortizations(){
+        return $this->hasManyThrough(LoanAmortizationSchedule::class,MortgageLoan::class,'id','mortgage_loan_id');
+    }
+
+    public function extraRepayments(){
+        return $this->hasManyThrough(ExtraRepaymentSchedule::class,MortgageLoan::class,'id','mortgage_loan_id');
+    }
 }
