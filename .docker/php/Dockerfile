@@ -8,7 +8,7 @@ WORKDIR /var/www/html
 
 
 # Copy the rest of the application code to the container
-# COPY . .
+COPY . .
 
 
 # Install system dependencies
